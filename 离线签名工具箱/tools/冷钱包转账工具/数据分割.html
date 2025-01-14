@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据分割工具</title>
+    <style>
+        /* 重置默认样式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 设置整个页面的布局 */
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            overflow: hidden;
+            overflow-y: auto;
+            /* 页面超出时可滚动 */
+        }
+
+        /* 页面内容容器样式 */
+        .container {
+            background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+            border-radius: 10px;
+            padding: 10px 100px 30px 100px;
+            width: 100%;
+            /* 最大宽度800px */
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            margin: 0;
+            padding-top: 0;
+            padding-bottom: 10px;
+            font-size: 3rem;
+            color: #000;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        label {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #555;
+            /* 标签字体颜色 */
+            display: block;
+        }
+
+        /* 输入框的样式 */
+        .input-box {
+            width: 100%;
+            /* 宽度100%，适应容器宽度 */
+            height: 150px;
+            /* 高度150px */
+            padding: 16px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 18px;
+            box-sizing: border-box;
+            resize: none;
+            /* 不允许调整大小 */
+            transition: all 0.3s ease;
+            /* 输入框聚焦时过渡效果 */
+            white-space: pre-wrap;
+            /* 支持换行 */
+            word-wrap: break-word;
+            /* 文字超出部分换行显示 */
+            margin-bottom: 20px;
+        }
+
+        /* 输入框聚焦时边框颜色变化 */
+        .input-box:focus {
+            border-color: #333;
+            outline: none;
+        }
+
+        /* 数字输入框样式 */
+        input[type="number"] {
+            width: 15%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            font-size: 18px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+
+        /* 按钮样式 */
+        button {
+            padding: 12px 24px;
+            font-size: 1rem;
+            margin: 10px;
+            cursor: pointer;
+            border: 2px solid #000;
+            background: transparent;
+            color: #000;
+            border-radius: 30px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        button:hover {
+            background-color: #000;
+            color: #fff;
+            /* 鼠标悬停时按钮颜色变化 */
+        }
+
+        /* 输出区域样式 */
+        .output {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: flex-start;
+            /* 左对齐 */
+            box-sizing: border-box;
+            width: 100%;
+            overflow-x: auto;
+            /* 只显示水平滚动条 */
+        }
+
+        /* 每个输出框的样式 */
+        .output .output-box {
+            margin-bottom: 15px;
+            font-size: 16px;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            box-sizing: border-box;
+            white-space: pre-wrap;
+            /* 支持换行 */
+            word-wrap: break-word;
+            /* 文字超出部分换行显示 */
+            text-align: left;
+            /* 左对齐文本 */
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            /* 左对齐内容 */
+            background-color: #f9f9f9;
+            transition: background-color 0.3s ease;
+            width: 100%;
+            /* 宽度为100% */
+            max-width: 100%;
+            /* 防止超出容器 */
+            overflow-x: auto;
+            /* 超出时显示水平滚动条 */
+        }
+
+        .output .output-box:hover {
+            background-color: #f1f1f1;
+            /* 鼠标悬停时背景色变化 */
+        }
+
+        /* 输出框序号的样式 */
+        .output .output-box .label {
+            background-color: #4CAF50;
+            color: white;
+            padding: inherit;
+            border-radius: 50%;
+            width: 20px;
+            /* 固定宽度 */
+            height: 20px;
+            /* 固定高度 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 15px;
+            /* 序号与文本之间的间隔 */
+            font-size: 18px;
+        }
+
+        /* 复制按钮的样式 */
+        .copy-button {
+            margin-left: 10px;
+            padding: 5px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            border: 2px solid #000;
+            background: transparent;
+            border-radius: 30px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .copy-button:hover {
+            background-color: #000;
+            color: #fff;
+            /* 鼠标悬停时颜色变化 */
+        }
+
+        /* 响应式布局：小屏幕设备 */
+        @media (max-width: 768px) {
+            button {
+                width: 100%;
+                padding: 14px 18px;
+            }
+
+            .output .output-box {
+                width: 100%;
+            }
+        }
+
+        /* 响应式布局：更小屏幕设备 */
+        @media (max-width: 480px) {
+            button {
+                width: 100%;
+                padding: 12px 14px;
+            }
+
+            .output .output-box {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>数据分割工具</h1>
+        <!-- 输入框：用户输入数据 -->
+        <label for="inputValue">请输入字符串（数字或字母）：</label>
+        <textarea id="inputValue" class="input-box" placeholder="输入数据" required></textarea>
+
+        <!-- 输入框：用户输入分割份数 -->
+        <label for="parts">请输入分割的份数：</label>
+        <input type="number" id="parts" placeholder="分割份数" required>
+
+        <!-- 按钮：触发分割操作 -->
+        <button onclick="splitData()">分割数据</button>
+
+        <!-- 输出区域：显示分割后的数据 -->
+        <div id="result" class="output"></div>
+    </div>
+
+    <script>
+        // 分割数据的函数
+        function splitData() {
+            // 获取输入的字符串和分割份数
+            const inputValue = document.getElementById("inputValue").value;
+            const parts = document.getElementById("parts").value;
+
+            // 校验输入是否合法
+            if (!inputValue || !parts) {
+                document.getElementById("result").innerHTML = "请输入有效的字符串和份数!";
+                return;
+            }
+
+            // 校验分割份数是否为有效数字
+            if (isNaN(parts) || parts <= 0) {
+                document.getElementById("result").innerHTML = "请输入有效的分割份数!";
+                return;
+            }
+
+            // 校验分割份数不能超过字符串的长度
+            if (parts > inputValue.length) {
+                document.getElementById("result").innerHTML = "分割份数不能大于字符串的长度!";
+                return;
+            }
+
+            // 计算每部分的基本长度
+            const partLength = Math.floor(inputValue.length / parts);
+            const remainder = inputValue.length % parts;  // 余数，决定部分是否需要多分配字符
+
+            let partsArray = [];
+            let startIndex = 0;
+
+            // 按照计算的长度分割字符串
+            for (let i = 0; i < parts; i++) {
+                // 如果有余数，将多分配一个字符
+                let currentPartLength = partLength + (i < remainder ? 1 : 0);
+                let part = inputValue.substring(startIndex, startIndex + currentPartLength);
+                partsArray.push(part);
+                startIndex += currentPartLength;
+            }
+
+            // 清空输出区域
+            let resultDiv = document.getElementById("result");
+            resultDiv.innerHTML = "";
+
+            // 将分割后的数据添加到输出区域
+            partsArray.forEach((part, index) => {
+                let outputBox = document.createElement("div");
+                outputBox.classList.add("output-box");
+
+                // 创建复制按钮
+                let copyButton = document.createElement("button");
+                copyButton.classList.add("copy-button");
+                copyButton.textContent = "复制";
+                copyButton.onclick = function () {
+                    copyToClipboard(part);  // 点击复制按钮时复制数据
+                };
+
+                // 创建序号标签
+                let label = document.createElement("div");
+                label.classList.add("label");
+                label.textContent = index + 1;  // 序号从1开始
+
+                // 将复制按钮、序号和数据添加到输出框
+                outputBox.appendChild(copyButton);
+                outputBox.appendChild(label);
+                outputBox.appendChild(document.createTextNode(part));
+
+                // 将输出框添加到结果区域
+                resultDiv.appendChild(outputBox);
+            });
+        }
+
+        // 复制到剪贴板的函数
+        function copyToClipboard(text) {
+            // 创建一个隐藏的输入框来复制文本
+            let tempInput = document.createElement("input");
+            document.body.appendChild(tempInput);
+            tempInput.value = text;
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+            alert("已复制: " + text);  // 提示用户已复制
+        }
+    </script>
+
+</body>
+
+</html>
