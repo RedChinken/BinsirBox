@@ -1,5 +1,0 @@
-# BinsirBox
-一款自用的离线交易狗狗币工具箱
-
-GPG指纹：AA6C68874FC5DB3BF3F35C977F7449AA02B1F55B
-https://github.com/OutCast3k/coinbin
